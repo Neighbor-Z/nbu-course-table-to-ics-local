@@ -8,7 +8,6 @@
 
 - Fix login problem
 
-- https://www.icloud.com.cn/iclouddrive/001H1wq5eiSxadZd-WIOZw6fg
 
   
 
@@ -87,7 +86,6 @@ First release.
 
 - 修复新版“统一身份认证平台”登陆问题
 
-- https://www.icloud.com.cn/iclouddrive/001H1wq5eiSxadZd-WIOZw6fg
 
   
 
