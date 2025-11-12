@@ -6,21 +6,52 @@ from tkinter import ttk
 from app.index import register
 
 root = Tk()
+frame = Frame(root)  # 创建一个Frame来容纳内容
+frame.pack(fill=BOTH, expand=True)  # 让Frame填充整个窗口空间
 style = ttk.Style()
+# 主题开关状态在初始化时就设置，这样 UI 开关的状态会与实际主题保持一致。
+# 在 Windows 上默认使用深色主题，并把 switchState 置为 True；其它平台默认浅色并置为 False。
+switchState=BooleanVar()
 if sys.platform=="win32":
+    switchState.set(True)
     sv_ttk.set_theme("dark")
     import ctypes
     ctypes.windll.shcore.SetProcessDpiAwareness(1) #告诉操作系统使用程序自身的dpi适配
     ScaleFactor=ctypes.windll.shcore.GetScaleFactorForDevice(0) #获取屏幕的缩放因子
     root.tk.call('tk', 'scaling', ScaleFactor/75) #设詈程序缩放
 else:
+    switchState.set(False)
     sv_ttk.set_theme("light")
 
+def apply_button_styles(is_dark: bool | None = None):
+    try:
+        if is_dark is None:
+            try:
+                th = style.theme_use() or ''
+                is_dark = 'dark' in th.lower()
+            except Exception:
+                is_dark = False
+
+        if sys.platform=="win32":
+            for widget in frame.winfo_children():  # 移除frame中的所有小部件
+                widget.destroy()
+            if is_dark:
+                sv_ttk.set_theme("dark")
+            else:
+                sv_ttk.set_theme("light")
+            style.configure('TButton',font=('微软雅黑', 10), width=10)
+            newcalButton=ttk.Button(frame, text="  获取!  ",command=calClick,style="Accent.TButton")
+            newcalButton.place(x=480, y=280)
+        else:
+            if is_dark:
+                sv_ttk.set_theme("dark")
+            else:
+                sv_ttk.set_theme("light")
+    except Exception:
+        pass
+
 def on_switch_toggle():
-    if switchState.get():
-        sv_ttk.set_theme("dark")
-    else:
-        sv_ttk.set_theme("light")
+    apply_button_styles(is_dark=switchState.get())
 
 def calClick(): 
     if data1.get()=='' or data2.get()=='' or data3.get()=='':
@@ -40,45 +71,17 @@ def calClick():
     else:
         resultBar.place(x=30, y=170)
     
-
-# 支持命令行参数
-# if __name__ == "__main__" and len(sys.argv) > 1:
-#     if sys.argv[1] == "-h" or sys.argv[1] == "--help":
-#         print("USAGE: loginform [username password] [first_monday term]")
-#         sys.exit()
-#     elif sys.argv[1] == '':
-#         root.after(300, calClick)
-#         root.after(2000, root.destroy)
-#     else:
-#         print("unknown argument!")
-#         print("USAGE: loginform [username password first_monday term]")
-#         sys.exit()
     
 if __name__ == '__main__':
-    root.title("宁波大学课表工具 v1.4")
-    # 设置字体
+    root.title("宁波大学课表工具 v1.4.1")
+    # 设置窗口大小
     if sys.platform=="win32" or sys.platform=="linux":
-        # style.configure("TEntry", font=('宋体', 15))
-        style.configure('TButton',font=('微软雅黑', 10), width=10)
-        # style.configure("TCheckbutton", font="微软雅黑 24")
-        # style.configure("Label", font=('宋体', 12))
-        # style.configure("big.TLabel", font="微软雅黑 36")
-        # style.configure("small.TLabel", font="微软雅黑 20")
-        # style.configure("verysmall.TLabel", font="微软雅黑 20")
         root.geometry('820x440+600+300')
     else:
-        # style.configure("TEntry", font="微软雅黑 12")
-        # style.configure("TButton", font="微软雅黑 12")
-        # style.configure("TCheckbutton", font="微软雅黑 12")
-        # style.configure("TLabel", font="微软雅黑 12")
-        # style.configure("big.TLabel", font="微软雅黑 18")
-        # style.configure("small.TLabel", font="微软雅黑 10")
-        # style.configure("verysmall.TLabel", font="微软雅黑 10")
         root.geometry('410x220+600+300')
     root.resizable(width=False, height=False)
     infoLabel=Label(root, text='请使用网上办事大厅账号登录',font='微软雅黑 16')
     devLabel=Label(root, text='By z邻域')
-    switchState=BooleanVar()
     themeSwitch=ttk.Checkbutton(root, variable=switchState, style="Switch.TCheckbutton", command=on_switch_toggle)
     data1=StringVar()
     data2=StringVar()
@@ -87,7 +90,7 @@ if __name__ == '__main__':
     result=StringVar()
     data3.set("2025-09-08")
     data4.set("2025-2026-1")
-    calButton=ttk.Button(root, text="  获取!  ",command=calClick,style="Accent.TButton")
+    calButton=ttk.Button(frame, text="  获取!  ",command=calClick,style="Accent.TButton")
     if sys.platform=="win32" or sys.platform=="linux":
         # 深色模式切换开关
         themeSwitch.place(x=680, y=40)
@@ -109,6 +112,7 @@ if __name__ == '__main__':
         entry2.place(x=160 ,y=210)
         entry3.place(x=160 ,y=290)
         entry4.place(x=520 ,y=130)
+        style.configure('TButton',font=('微软雅黑', 10), width=10)
         calButton.place(x=480, y=280)
     else:
         themeSwitch.place(x=340, y=20)

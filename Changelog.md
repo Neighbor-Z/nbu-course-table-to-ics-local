@@ -1,4 +1,12 @@
+# v1.4.1-20251112
 
+
+
+## What's Changed
+
+- Fix some incorrect behaviors in dark mode on Windows.
+
+  
 
 # v1.4-20251019
 
@@ -9,7 +17,7 @@
 - Fix login problem
 
 
-  
+
 
 # v1.3.1-20250125
 
@@ -78,6 +86,16 @@ First release.
 
 
 
+# v1.4.1-20251112
+
+
+
+## 更新日志
+
+- 修复了Windows版在深色模式下的部分问题
+
+  
+
 # v1.4-20251019
 
 
@@ -87,7 +105,7 @@ First release.
 - 修复新版“统一身份认证平台”登陆问题
 
 
-  
+
 
 # v1.3.1-20250125
 
