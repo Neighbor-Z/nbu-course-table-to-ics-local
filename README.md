@@ -27,7 +27,7 @@ Program will be placed at  `./dist` .
 
 ## License
 
-This tool is released under GPL license, refer [LICENSE](https://github.com/Neighbor-Z/nbu-course-table-to-ics-local/LICENSE) file.
+This tool is released under GPL license, refer [LICENSE](https://github.com/Neighbor-Z/nbu-course-table-to-ics-local/blob/main/LICENSE) file.
 
 
 
@@ -62,7 +62,7 @@ python setup.py py2app
 
 ## 许可证
 
-该工具采用 GPL 许可，请参阅 [许可](https://github.com/Neighbor-Z/nbu-course-table-to-ics-local/LICENSE) 文件。
+该工具采用 GPL 许可，请参阅 [许可](https://github.com/Neighbor-Z/nbu-course-table-to-ics-local/blob/main/LICENSE) 文件。
 
 
 
