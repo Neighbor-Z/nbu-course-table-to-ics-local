@@ -1,5 +1,5 @@
 from tkinter import *
-import sys
+import sys, webbrowser
 import tkinter.messagebox
 import sv_ttk
 from tkinter import ttk
@@ -70,8 +70,10 @@ def calClick():
         resultBar.place(x=60, y=340)
     else:
         resultBar.place(x=30, y=170)
-    
-    
+
+def openweb():
+    webbrowser.open("https://github.com/Neighbor-Z/nbu-course-table-to-ics-local/")
+
 if __name__ == '__main__':
     root.title("宁波大学课表工具 v1.4.1")
     # 设置窗口大小
@@ -81,7 +83,7 @@ if __name__ == '__main__':
         root.geometry('410x220+600+300')
     root.resizable(width=False, height=False)
     infoLabel=Label(root, text='请使用网上办事大厅账号登录',font='微软雅黑 16')
-    devLabel=Label(root, text='By z邻域')
+    devLabel=Label(root, text='GitHub', font=("Arial", 14, 'underline'))
     themeSwitch=ttk.Checkbutton(root, variable=switchState, style="Switch.TCheckbutton", command=on_switch_toggle)
     data1=StringVar()
     data2=StringVar()
@@ -136,5 +138,6 @@ if __name__ == '__main__':
         entry4.place(x=260 ,y=60)
         calButton.place(x=280, y=140)
     entry2.bind("<Return>", lambda e: calClick())
+    devLabel.bind("<Button-1>", lambda e: openweb())
     root.mainloop()
     
