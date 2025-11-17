@@ -1,143 +1,150 @@
-from tkinter import *
-import sys, webbrowser
+import customtkinter as ctk
 import tkinter.messagebox
-import sv_ttk
-from tkinter import ttk
+import sys, webbrowser
 from app.index import register
 
-root = Tk()
-frame = Frame(root)  # 创建一个Frame来容纳内容
-frame.pack(fill=BOTH, expand=True)  # 让Frame填充整个窗口空间
-style = ttk.Style()
-# 主题开关状态在初始化时就设置，这样 UI 开关的状态会与实际主题保持一致。
-# 在 Windows 上默认使用深色主题，并把 switchState 置为 True；其它平台默认浅色并置为 False。
-switchState=BooleanVar()
-if sys.platform=="win32":
-    switchState.set(True)
-    sv_ttk.set_theme("dark")
-    import ctypes
-    ctypes.windll.shcore.SetProcessDpiAwareness(1) #告诉操作系统使用程序自身的dpi适配
-    ScaleFactor=ctypes.windll.shcore.GetScaleFactorForDevice(0) #获取屏幕的缩放因子
-    root.tk.call('tk', 'scaling', ScaleFactor/75) #设詈程序缩放
-else:
-    switchState.set(False)
-    sv_ttk.set_theme("light")
 
-def apply_button_styles(is_dark: bool | None = None):
-    try:
-        if is_dark is None:
-            try:
-                th = style.theme_use() or ''
-                is_dark = 'dark' in th.lower()
-            except Exception:
-                is_dark = False
-
-        if sys.platform=="win32":
-            for widget in frame.winfo_children():  # 移除frame中的所有小部件
-                widget.destroy()
-            if is_dark:
-                sv_ttk.set_theme("dark")
-            else:
-                sv_ttk.set_theme("light")
-            style.configure('TButton',font=('微软雅黑', 10), width=10)
-            newcalButton=ttk.Button(frame, text="  获取!  ",command=calClick,style="Accent.TButton")
-            newcalButton.place(x=480, y=280)
-        else:
-            if is_dark:
-                sv_ttk.set_theme("dark")
-            else:
-                sv_ttk.set_theme("light")
-    except Exception:
-        pass
-
-def on_switch_toggle():
-    apply_button_styles(is_dark=switchState.get())
-
-def calClick(): 
+def action():
     if data1.get()=='' or data2.get()=='' or data3.get()=='':
         tkinter.messagebox.showerror('错误','请正确填写信息')
         result.set("失败")
-        resultBar=Label(root,textvariable=result,font='微软雅黑 14 bold',fg='#e90000')
+        resultBar=ctk.CTkLabel(root,textvariable=result,font=('微软雅黑',14), 
+                                fg_color="#dcdbdb", 
+                                text_color="#e90000")
     else:
         result.set("你可以在控制台中看到实时作业进度")
-        resultBar=Label(root,textvariable=result)
+        resultBar=ctk.CTkLabel(root,textvariable=result,font=('微软雅黑',14),fg_color="#dcdbdb")
         username=data1.get()
         password=data2.get()
         first_monday=data3.get()
         XNXQDM=data4.get()
         register(username, password, first_monday, XNXQDM)
-    if sys.platform=="win32" or sys.platform=="linux":
-        resultBar.place(x=60, y=340)
-    else:
-        resultBar.place(x=30, y=170)
+    # resultBar.place(x=60, y=320)
+
 
 def openweb():
     webbrowser.open("https://github.com/Neighbor-Z/nbu-course-table-to-ics-local/")
 
-if __name__ == '__main__':
-    root.title("宁波大学课表工具 v1.4.1")
-    # 设置窗口大小
-    if sys.platform=="win32" or sys.platform=="linux":
-        root.geometry('820x440+600+300')
+
+if __name__ == "__main__":
+    root = ctk.CTk()
+    root.title("宁波大学课表工具 v1.4.1 CustomTkinter")
+    root.geometry("520x340+600+300")
+
+    if sys.platform!="win32":
+        ctk.set_appearance_mode("light")
+        switch_var = ctk.StringVar(value="off")
     else:
-        root.geometry('410x220+600+300')
-    root.resizable(width=False, height=False)
-    infoLabel=Label(root, text='请使用网上办事大厅账号登录',font='微软雅黑 16')
-    devLabel=Label(root, text='GitHub', font=("Arial", 14, 'underline'))
-    themeSwitch=ttk.Checkbutton(root, variable=switchState, style="Switch.TCheckbutton", command=on_switch_toggle)
-    data1=StringVar()
-    data2=StringVar()
-    data3=StringVar()
-    data4=StringVar()
-    result=StringVar()
+        ctk.set_appearance_mode("Dark")
+        switch_var = ctk.StringVar(value="on")
+    ctk.set_default_color_theme("blue")
+
+    # =============================
+    # Main container
+    # =============================
+    main = ctk.CTkFrame(root, corner_radius=10)
+    main.pack(fill="both", expand=True, padx=10, pady=10)
+
+    # =============================
+    # Top bar (theme switch)
+    # =============================
+    top_bar = ctk.CTkFrame(main)
+    top_bar.pack(fill="x", pady=(5, 15))
+    
+    def _apply_appearance(mode: str):
+        # Apply appearance mode and refresh pending UI updates to reduce visible flicker.
+        ctk.set_appearance_mode(mode)
+        try:
+            root.update_idletasks()
+        except Exception:
+            pass
+
+    def on_theme_toggle():
+        if switch_var.get()=="on":
+            mode = "Dark"
+        else:
+            mode = "Light"
+        try:
+            _apply_appearance(mode)
+        except Exception:
+            pass
+
+    theme_switch = ctk.CTkSwitch(top_bar, text="深色", command=on_theme_toggle,
+                                 variable=switch_var, 
+                                 font=('微软雅黑',12),
+                                 onvalue="on", offvalue="off")
+    theme_switch.pack(side="left", padx=(5, 2))
+
+    # =============================
+    # Form container (two-column layout)
+    # 左列：学号、密码；右列：学期、首个周一
+    # =============================
+    form = ctk.CTkFrame(main)
+    form.pack(fill="x", expand=False, pady=(10, 10))
+    # Grid layout: 2 columns
+    for col in range(2):
+        form.grid_columnconfigure(col, weight=1)
+
+    data1 = ctk.StringVar()
+    data2 = ctk.StringVar()
+    data3 = ctk.StringVar()
+    data4 = ctk.StringVar()
+    result= ctk.StringVar()
     data3.set("2025-09-08")
     data4.set("2025-2026-1")
-    calButton=ttk.Button(frame, text="  获取!  ",command=calClick,style="Accent.TButton")
-    if sys.platform=="win32" or sys.platform=="linux":
-        # 深色模式切换开关
-        themeSwitch.place(x=680, y=40)
-        infoLabel.place(x=35, y=40)
-        devLabel.place(x=560, y=360)
-        dataLabel1=Label(root, text='学号', font='微软雅黑 10')
-        dL2=Label(root, text='密码', font='微软雅黑 10')
-        dL3=Label(root, text='首个周一', font='微软雅黑 10')
-        dL4=Label(root, text='学期', font='微软雅黑 10')
-        dataLabel1.place(x=40, y=130)
-        dL2.place(x=40, y=210)
-        dL3.place(x=40, y=290)
-        dL4.place(x=440, y=130)
-        entry1=ttk.Entry(root,textvariable=data1,font=('Helvetica', 10),width=12)
-        entry2=ttk.Entry(root,textvariable=data2,font=('Helvetica', 10),show='*',width=12)
-        entry3=ttk.Entry(root,textvariable=data3,font=('Helvetica', 10),width=10)
-        entry4=ttk.Entry(root,textvariable=data4,font=('Helvetica', 10),width=12)
-        entry1.place(x=160 ,y=130)
-        entry2.place(x=160 ,y=210)
-        entry3.place(x=160 ,y=290)
-        entry4.place(x=520 ,y=130)
-        style.configure('TButton',font=('微软雅黑', 10), width=10)
-        calButton.place(x=480, y=280)
+    if sys.platform=="win32":
+        dL1=ctk.CTkLabel(form, text="学号", font=('微软雅黑',12))
+        dL2=ctk.CTkLabel(form, text="学期", font=('微软雅黑',12))
+        dL3=ctk.CTkLabel(form, text="密码", font=('微软雅黑',12))
+        dL4=ctk.CTkLabel(form, text="首个周一", font=('微软雅黑',12))
     else:
-        themeSwitch.place(x=340, y=20)
-        infoLabel.place(x=17, y=20)
-        devLabel.place(x=280, y=180)
-        dataLabel1=ttk.Label(root, text='学号')
-        dL2=ttk.Label(root, text='密码')
-        dL3=ttk.Label(root, text='首个周一')
-        dL4=ttk.Label(root, text='学期')
-        dataLabel1.place(x=20, y=65)
-        dL2.place(x=20, y=105)
-        dL3.place(x=20, y=145)
-        dL4.place(x=220, y=65)
-        entry1=ttk.Entry(root,textvariable=data1,width=12)
-        entry2=ttk.Entry(root,textvariable=data2,show='*',width=12)
-        entry3=ttk.Entry(root,textvariable=data3,width=10)
-        entry4=ttk.Entry(root,textvariable=data4,width=12)
-        entry1.place(x=80 ,y=60)
-        entry2.place(x=80 ,y=100)
-        entry3.place(x=80 ,y=140)
-        entry4.place(x=260 ,y=60)
-        calButton.place(x=280, y=140)
-    entry2.bind("<Return>", lambda e: calClick())
-    devLabel.bind("<Button-1>", lambda e: openweb())
+        dL1=ctk.CTkLabel(form, text="学号")
+        dL2=ctk.CTkLabel(form, text="学期")
+        dL3=ctk.CTkLabel(form, text="密码")
+        dL4=ctk.CTkLabel(form, text="首个周一")
+
+    # 左列：学号、密码（垂直堆叠）
+    dL1.grid(row=0, column=0, padx=8, pady=(8,2), sticky="w")
+    entry1=ctk.CTkEntry(form, textvariable=data1)
+    entry1.grid(row=1, column=0, padx=8, pady=(0,8), sticky="ew")
+
+    dL3.grid(row=2, column=0, padx=8, pady=(8,2), sticky="w")
+    entry3=ctk.CTkEntry(form, textvariable=data2, show="*")
+    entry3.grid(row=3, column=0, padx=8, pady=(0,8), sticky="ew")
+
+    # 右列：学期、首个周一（垂直堆叠）
+    dL2.grid(row=0, column=1, padx=8, pady=(8,2), sticky="w")
+    entry2=ctk.CTkEntry(form, textvariable=data4)
+    entry2.grid(row=1, column=1, padx=8, pady=(0,8), sticky="ew")
+
+    dL4.grid(row=2, column=1, padx=8, pady=(8,2), sticky="w")
+    entry4=ctk.CTkEntry(form, textvariable=data3)
+    entry4.grid(row=3, column=1, padx=8, pady=(0,8), sticky="ew")
+
+    # =============================
+    # Button area (保留“获取”按钮)
+    # =============================
+    bottom_bar = ctk.CTkFrame(main)
+    bottom_bar.pack(pady=(20, 5))
+    btn=ctk.CTkButton(bottom_bar, text=" 获取 ", command=action, font=('微软雅黑',14), width=120)
+    btn.pack()
+
+    # 右下角的 GitHub 文本链接（无按钮背景，仅下划线）
+    try:
+        # place inside `main` so background matches rounded container and avoids visible rectangle artifacts
+        main_bg = main.cget('fg_color') if main.cget('fg_color') is not None else None
+        github_label = ctk.CTkLabel(main, text='GitHub', text_color="#1a73e8", fg_color=main_bg, font=('微软雅黑',14,'underline'))
+        github_label.place(relx=0.98, rely=0.98, anchor="se")
+        github_label.bind("<Button-1>", lambda e: openweb())
+    except Exception:
+        # fallback to a simple tkinter label if CTkLabel fails for any reason
+        import tkinter as tk
+        try:
+            bg = main.cget('fg_color') or root.cget('bg')
+        except Exception:
+            bg = root.cget('bg')
+        github_label = tk.Label(main, text="GitHub", fg="#1a73e8", bg=bg, cursor="hand2", font=('微软雅黑',14,'underline'))
+        github_label.place(relx=0.98, rely=0.98, anchor="se")
+        github_label.bind("<Button-1>", lambda e: openweb())
+
     root.mainloop()
-    

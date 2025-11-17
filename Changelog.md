@@ -1,3 +1,13 @@
+# v1.4.1-20251117
+
+
+
+## What's Changed
+
+- Port to CustomTkinter and ditch sv_ttk.
+
+  
+
 # v1.4.1-20251112
 
 
@@ -92,7 +102,17 @@ First release.
 
 ## 更新日志
 
-- 修复了Windows版在深色模式下的部分问题
+- 迁移至 CustomTkinter 并弃用 sv_ttk
+
+  
+
+# v1.4.1-20251112
+
+
+
+## 更新日志
+
+- 修复了 Windows 版在深色模式下的部分问题
 
   
 
@@ -123,7 +143,7 @@ First release.
 
 ## 更新日志
 
-- 支持Windows高分辨率屏幕
+- 支持 Windows 高分辨率屏幕
 
   
 

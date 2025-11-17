@@ -7,19 +7,25 @@ Usage:
 
 from setuptools import setup
 
-APP = ['./LoginForm.py']
-DATA_FILES = ['./LoginForm.py','./app/','./utils/','./config.yml']
+APP = ['LoginForm.py']
+DATA_FILES = ['./config.yml']
 OPTIONS = {
-#   'iconfile':'earth.icns',
-            'plist':{
-                    'CFBundleName'   : 'Class Table Tool',     # 应用名
-                    'CFBundleDisplayName': '宁大课表工具', # 应用显示名
-                    'CFBundleVersion': '1.4.1-2025-11-12',      # 应用版本号
-                    'CFBundleIdentifier' : 'me.z.classtabletool', # 应用包名、唯一标识
-                    'NSHumanReadableCopyright': 'Copyright © 2025 Neighborhood of Z. All rights reserved.', # 可读版权
-#           'includes': ['sip', 'PyQt5.QtCore', 'PyQt5.QtWidgets']
-                    }
-                
+    'plist':{
+                'CFBundleName'   : 'Class Table Tool',     # 应用名
+                'CFBundleDisplayName': '宁大课表工具', # 应用显示名
+                'CFBundleVersion': '1.4.1-20251117-CustomTkinter',      # 应用版本号
+                'CFBundleIdentifier' : 'me.z.classtabletool', # 应用包名、唯一标识
+                'NSHumanReadableCopyright': 'Copyright © 2025 Neighborhood of Z. All rights reserved.', # 可读版权
+            },
+    'excludes': [
+        'PyQt5',
+        'PyQt6',
+        'PyInstaller',
+        'numpy',
+        'cffi',
+        'PIL',
+        'cryptography',
+    ]
 }
 
 setup(
