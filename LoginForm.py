@@ -29,9 +29,7 @@ def action():
         # resultBar.place(x=60, y=320)
     except Exception as e:
         # 捕获所有未预期的异常，防止程序崩溃
-        # import traceback
         error_msg = f"错误: {str(e)}"
-        # print(f"错误详情:\n{traceback.format_exc()}")
         tkinter.messagebox.showerror('错误', error_msg)
         result.set("操作失败，请查看控制台错误信息")
 
@@ -45,12 +43,18 @@ if __name__ == "__main__":
     root.title("宁波大学课表工具 v1.5 CustomTkinter")
     root.geometry("520x340+600+300")
     root.minsize(320, 320)
-    if sys.platform!="win32":
-        ctk.set_appearance_mode("light")
-        switch_var = ctk.StringVar(value="off")
-    else:
+    if sys.platform=="win32":
         ctk.set_appearance_mode("Dark")
         switch_var = ctk.StringVar(value="on")
+    elif sys.platform=="linux":
+        ctk.set_appearance_mode("light")
+        switch_var = ctk.StringVar(value="off")
+        # HiDPI Linux Display Support
+        ctk.set_widget_scaling(1.5)  # widget dimensions and text size
+        ctk.set_window_scaling(1.5)  # window geometry dimensions
+    else:
+        ctk.set_appearance_mode("light")
+        switch_var = ctk.StringVar(value="off")
     ctk.set_default_color_theme("blue")
 
     # =============================
@@ -162,3 +166,4 @@ if __name__ == "__main__":
         github_label.bind("<Button-1>", lambda e: openweb())
 
     root.mainloop()
+
