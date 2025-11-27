@@ -5,21 +5,35 @@ from app.index import register
 
 
 def action():
-    if data1.get()=='' or data2.get()=='' or data3.get()=='':
-        tkinter.messagebox.showerror('错误','请正确填写信息')
-        result.set("失败")
-        resultBar=ctk.CTkLabel(root,textvariable=result,font=('微软雅黑',14), 
-                                fg_color="#dcdbdb", 
-                                text_color="#e90000")
-    else:
-        result.set("你可以在控制台中看到实时作业进度")
-        resultBar=ctk.CTkLabel(root,textvariable=result,font=('微软雅黑',14),fg_color="#dcdbdb")
-        username=data1.get()
-        password=data2.get()
-        first_monday=data3.get()
-        XNXQDM=data4.get()
-        register(username, password, first_monday, XNXQDM)
-    # resultBar.place(x=60, y=320)
+    try:
+        if data1.get()=='' or data2.get()=='' or data3.get()=='':
+            tkinter.messagebox.showerror('错误','请正确填写信息')
+            result.set("失败")
+            resultBar=ctk.CTkLabel(root,textvariable=result,font=('微软雅黑',14), 
+                                    fg_color="#dcdbdb", 
+                                    text_color="#e90000")
+        else:
+            result.set("你可以在控制台中看到实时作业进度")
+            resultBar=ctk.CTkLabel(root,textvariable=result,font=('微软雅黑',14),fg_color="#dcdbdb")
+            username=data1.get()
+            password=data2.get()
+            first_monday=data3.get()
+            XNXQDM=data4.get()
+            calendar, data_hash=register(username, password, first_monday, XNXQDM)
+            try:
+            # 保存文件
+                calendar.save_as_ics_file()
+                print("文件已保存")
+            except Exception as e:
+                print("保存失败")
+        # resultBar.place(x=60, y=320)
+    except Exception as e:
+        # 捕获所有未预期的异常，防止程序崩溃
+        # import traceback
+        error_msg = f"错误: {str(e)}"
+        # print(f"错误详情:\n{traceback.format_exc()}")
+        tkinter.messagebox.showerror('错误', error_msg)
+        result.set("操作失败，请查看控制台错误信息")
 
 
 def openweb():
@@ -28,9 +42,9 @@ def openweb():
 
 if __name__ == "__main__":
     root = ctk.CTk()
-    root.title("宁波大学课表工具 v1.4.1 CustomTkinter")
+    root.title("宁波大学课表工具 v1.5 CustomTkinter")
     root.geometry("520x340+600+300")
-
+    root.minsize(320, 320)
     if sys.platform!="win32":
         ctk.set_appearance_mode("light")
         switch_var = ctk.StringVar(value="off")

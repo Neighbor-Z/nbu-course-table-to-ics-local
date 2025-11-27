@@ -1,7 +1,10 @@
 import datetime
 import os
 import uuid
-import tkinter.filedialog
+try:
+    import tkinter.filedialog
+except ImportError:
+    tkinter = None
 
 class Event:
     """
@@ -56,15 +59,28 @@ class Calendar:
         self.__calendar_text__ += "END:VCALENDAR"
         return self.__calendar_text__
 
-    def save_as_ics_file(self):
+    def save_as_ics_file(self, save_path=None):
         ics_text = self.get_ics_text()
-#       open("output/%s.ics" % self.calendar_name, "w", encoding="utf-8").write(
-#           ics_text)  # 使用utf8编码生成ics文件，否则日历软件打开是乱码
-        print("请在弹出窗口中选择保存位置")
-        filedir = tkinter.filedialog.askdirectory(initialdir="/", title="选择保存路径")
-        open("%s.ics" % (filedir+'/'+self.calendar_name), "w", encoding="utf-8").write(
-            ics_text)  # 使用utf8编码生成ics文件，否则日历软件打开是乱码
-        return "%s.ics" % self.calendar_name
+        if save_path is None:
+            # 如果没有提供路径，使用 tkinter 对话框（向后兼容）
+            if tkinter is None:
+                raise ValueError("未提供保存路径，且 tkinter 不可用")
+            print("请在弹出窗口中选择保存位置")
+            filedir = tkinter.filedialog.askdirectory(initialdir="/", title="选择保存路径")
+            if not filedir:
+                raise ValueError("未选择保存路径")
+            save_path = f"{filedir}/{self.calendar_name}.ics"
+        else:
+            # 如果提供了路径，直接使用
+            if not save_path.endswith('.ics'):
+                # 如果路径是目录，添加文件名
+                if not save_path.endswith('/') and not save_path.endswith('\\'):
+                    save_path += '/'
+                save_path = f"{save_path}{self.calendar_name}.ics"
+        
+        with open(save_path, "w", encoding="utf-8") as f:
+            f.write(ics_text)  # 使用utf8编码生成ics文件，否则日历软件打开是乱码
+        return save_path
 
     def open_ics_file(self):
         os.system("%s.ics" % self.calendar_name)

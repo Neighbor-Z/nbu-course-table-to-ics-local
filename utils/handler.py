@@ -31,9 +31,8 @@ def handleIcsBks(session,first_monday,XNXQDM):
                           DESCRIPTION="教师：{}，节次：{}-{}，周次：{}，课号：{}".format(item['SKJS'], item['KSJC'], item['JSJC'],
                                                                           index + 1, item['KCH']),
                           LOCATION=item['JASMC'])
-    url = calendar.save_as_ics_file()
-    print("文件已保存。你可以安心关闭本窗口")
-    return url, class_md5.hexdigest()
+    # 不直接保存，返回日历对象和文件名
+    return calendar, class_md5.hexdigest()
 
 
 def handleIcsYjs(session,first_monday,XNXQDM):
@@ -53,14 +52,14 @@ def handleIcsYjs(session,first_monday,XNXQDM):
                                                                             item['JSJCDM'],
                                                                             index + 1, item['KCDM']),
                           LOCATION=item['JASMC'])
-    url = calendar.save_as_ics_file()
-    return url, class_md5.hexdigest()
+    # 不直接保存，返回日历对象和文件名
+    return calendar, class_md5.hexdigest()
 
 
 def handleIcs(username, password, first_monday, XNXQDM):
     session = checkStudentKind(username, password)
     if len(username) == 9:
-        res1, res2 = handleIcsBks(session,first_monday,XNXQDM)
+        calendar, data_hash = handleIcsBks(session,first_monday,XNXQDM)
     else:
-        res1, res2 = handleIcsYjs(session,first_monday,'20251')
-    return res1, res2
+        calendar, data_hash = handleIcsYjs(session,first_monday,'20251')
+    return calendar, data_hash

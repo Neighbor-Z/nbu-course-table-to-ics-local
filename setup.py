@@ -11,9 +11,9 @@ APP = ['LoginForm.py']
 DATA_FILES = ['./config.yml']
 OPTIONS = {
     'plist':{
-                'CFBundleName'   : 'Class Table Tool',     # 应用名
+                'CFBundleName'   : 'Class_Table_Tool_macOS_1.5_ct',     # 应用名
                 'CFBundleDisplayName': '宁大课表工具', # 应用显示名
-                'CFBundleVersion': '1.4.1-20251117-CustomTkinter',      # 应用版本号
+                'CFBundleVersion': '1.5-20251119-CustomTkinter',      # 应用版本号
                 'CFBundleIdentifier' : 'me.z.classtabletool', # 应用包名、唯一标识
                 'NSHumanReadableCopyright': 'Copyright © 2025 Neighborhood of Z. All rights reserved.', # 可读版权
             },
@@ -25,6 +25,7 @@ OPTIONS = {
         'cffi',
         'PIL',
         'cryptography',
+        'sip',
     ]
 }
 
