@@ -11,11 +11,12 @@ APP = ['LoginForm_pyqt.py']
 DATA_FILES = ['./config.yml']
 OPTIONS = {
     'plist':{
-                'CFBundleName'   : 'Class_Table_Tool_macOS_1.5_Qt',     # 应用名
+                'CFBundleName'   : 'Class_Table_Tool_macOS_1.5.1_Qt',     # 应用名
                 'CFBundleDisplayName': '宁大课表工具', # 应用显示名
-                'CFBundleVersion': '1.5-20251119-PyQt6',      # 应用版本号
-                'CFBundleIdentifier' : 'me.z.classtabletool', # 应用包名、唯一标识
-                'NSHumanReadableCopyright': 'Copyright © 2025 Neighborhood of Z. All rights reserved.', # 可读版权
+                'CFBundleVersion': '1.5.1-20251205-PyQt6',      # 应用版本号
+                'CFBundleIdentifier' : 'me.z.classtabletoolqt', # 应用包名、唯一标识
+                'NSHumanReadableCopyright': ' ', # 可读版权
+                'LSMinimumSystemVersion': '10.14.0',
             },
     'excludes': [
         'PyQt5',
