@@ -212,9 +212,7 @@ def renewKcbCookieYjs(session):
 
 
 def checkStudentKind(usr, pwd):
-    # session = getCookie(usr, pwd)
     print("{}:正在登录ehall，请等待...".format(usr))
-#   tkinter.messagebox.showerror('正在登录ehall，请等待...')
     session = getCookie(usr, pwd)
     print("ehall登录成功")
     time.sleep(1)
@@ -238,7 +236,7 @@ def getClassListBks(session,XNXQDM):
         json.dumps(json.loads(rn2re2.text)['datas']['xskcb']['rows']).encode())
 
 
-def getClassListYjs(session):
+def getClassListYjs(session,XNXQDM):
     # print("{}-{}:正在登录ehall，请等待...".format(usr, pwd))
     # session = getCookie(usr, pwd)
     print("研究生：正在尝试请求查询课程表凭证，请等待...")
@@ -247,7 +245,7 @@ def getClassListYjs(session):
     kcburl = 'https://ehall.nbu.edu.cn/gsapp/sys/wdkbapp/modules/xskcb/xspkjgcx.do'
     stuInfoUrl = 'https://ehall.nbu.edu.cn/gsapp/sys/wdkbapp/wdkcb/initXsxx.do?XH='
     time.sleep(1)
-    rn2re2 = session.post(kcburl, headers=indexHeader(), data={'XNXQDM': '20251'})
+    rn2re2 = session.post(kcburl, headers=indexHeader(), data={'XNXQDM': XNXQDM })
     rn2re3 = session.get(stuInfoUrl, headers=indexHeader())
     return json.loads(rn2re2.text), json.loads(rn2re3.text), hashlib.md5(rn2re2.text.encode())
 

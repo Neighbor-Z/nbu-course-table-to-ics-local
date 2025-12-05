@@ -37,7 +37,7 @@ def handleIcsBks(session,first_monday,XNXQDM):
 
 def handleIcsYjs(session,first_monday,XNXQDM):
     time_config = getYamlData()
-    data_list, stu_info, class_md5 = getClassListYjs(session)
+    data_list, stu_info, class_md5 = getClassListYjs(session,XNXQDM)
     kcb_list = data_list['datas']['xspkjgcx']['rows']
     calendar = Calendar(calendar_name=stu_info['data'][0]['XH'] + '_' + XNXQDM + '_YJS')
     for item in kcb_list:
@@ -61,5 +61,6 @@ def handleIcs(username, password, first_monday, XNXQDM):
     if len(username) == 9:
         calendar, data_hash = handleIcsBks(session,first_monday,XNXQDM)
     else:
-        calendar, data_hash = handleIcsYjs(session,first_monday,'20251')
+        yjsXNXQDM = XNXQDM[:4] + XNXQDM[-1:]
+        calendar, data_hash = handleIcsYjs(session,first_monday,yjsXNXQDM)
     return calendar, data_hash
