@@ -1,5 +1,5 @@
 import sys
-import webbrowser, time
+import webbrowser
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton,
     QGridLayout, QHBoxLayout, QVBoxLayout, QProgressBar, QMessageBox, QFileDialog
@@ -31,7 +31,7 @@ class Worker(QThread):
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("宁波大学课表工具 v1.5 (PyQt6)")
+        self.setWindowTitle("宁波大学课表工具 v1.5.1 PyQt6")
         self.setMinimumSize(520, 360)
 
         self._worker = None

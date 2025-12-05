@@ -40,7 +40,7 @@ def openweb():
 
 if __name__ == "__main__":
     root = ctk.CTk()
-    root.title("宁波大学课表工具 v1.5 CustomTkinter")
+    root.title("宁波大学课表工具 v1.5.1 CustomTkinter")
     root.geometry("520x340+600+300")
     root.minsize(320, 320)
     if sys.platform=="win32":

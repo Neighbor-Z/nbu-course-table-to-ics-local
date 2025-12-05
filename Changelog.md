@@ -1,3 +1,14 @@
+# v1.5.1-20251205
+
+
+
+## What's Changed
+
+- Yjs logic optimized
+- Add LSMinimumSystemVersion in setup scripts
+
+
+
 # v1.5-20251119
 
 
@@ -103,6 +114,17 @@
 # v1.0-20230712
 
 First release.
+
+
+
+# v1.5.1-20251205
+
+
+
+## 更新日志
+
+- Yjs逻辑优化
+- 在setup中添加LSMinimumSystemVersion
 
 
 
