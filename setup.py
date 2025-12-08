@@ -13,7 +13,7 @@ OPTIONS = {
     'plist':{
                 'CFBundleName'   : 'Class_Table_Tool_macOS_1.5.1_ct',     # 应用名
                 'CFBundleDisplayName': '宁大课表工具', # 应用显示名
-                'CFBundleVersion': '1.5.1-20251205-CustomTkinter',      # 应用版本号
+                'CFBundleVersion': '1.5.1(2)-20251208-CustomTkinter',      # 应用版本号
                 'CFBundleIdentifier' : 'me.z.classtabletool', # 应用包名、唯一标识
                 'NSHumanReadableCopyright': ' ', # 可读版权
                 'LSMinimumSystemVersion': '10.9.0',
