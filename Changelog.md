@@ -1,3 +1,13 @@
+# v1.5.1(2)-20251208
+
+
+
+## What's Changed
+
+- CustomTkinter multi-threaded, window can respond to operations now when background tasks are working
+
+
+
 # v1.5.1-20251205
 
 
@@ -114,6 +124,16 @@
 # v1.0-20230712
 
 First release.
+
+
+
+# v1.5.1(2)-20251208
+
+
+
+## 更新日志
+
+- CustomTkinter 多线程化，使得窗口能在后台任务工作时响应操作
 
 
 
