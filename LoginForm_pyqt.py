@@ -4,13 +4,15 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QLineEdit, QPushButton,
     QGridLayout, QHBoxLayout, QVBoxLayout, QProgressBar, QMessageBox, QFileDialog
 )
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QPropertyAnimation, QEasingCurve
 from app.index import register
 
 
 class Worker(QThread):
     finished = pyqtSignal(object)  # 传递日历对象
     error = pyqtSignal(str)
+    status = pyqtSignal(str)
+    progress = pyqtSignal(int)
 
     def __init__(self, username, password, first_monday, XNXQDM):
         super().__init__()
@@ -18,12 +20,49 @@ class Worker(QThread):
         self.password = password
         self.first_monday = first_monday
         self.XNXQDM = XNXQDM
+        self._captured = []
 
     def run(self):
         try:
             # Call existing business logic (may perform network I/O)
-            calendar, data_hash = register(self.username, self.password, self.first_monday, self.XNXQDM)
-            self.finished.emit(calendar)
+            # Redirect prints from register() to status signal and emit progress
+            import sys
+            original_stdout = sys.stdout
+            self._progress_val = 0
+            self._captured.clear()
+
+            class _Redirect:
+                def __init__(self, outer):
+                    self.outer = outer
+
+                def write(self, text):
+                    try:
+                        # accumulate all printed text so we can save it later
+                        if text:
+                            self.outer._captured.append(text)
+                        if text and text.strip():
+                            self.outer.status.emit(text.strip())
+                            # bump progress conservatively
+                            self.outer._progress_val += 20
+                            if self.outer._progress_val > 100:
+                                self.outer._progress_val = 100
+                            self.outer.progress.emit(self.outer._progress_val)
+                    except Exception:
+                        pass
+
+                def flush(self):
+                    pass
+
+            sys.stdout = _Redirect(self)
+            try:
+                calendar, data_hash = register(self.username, self.password, self.first_monday, self.XNXQDM)
+                # ensure progress reaches 100 on success
+                self.progress.emit(100)
+                # join captured stdout and emit to main thread for saving
+                captured_text = ''.join(self._captured)
+                self.finished.emit(calendar)
+            finally:
+                sys.stdout = original_stdout
         except Exception as e:
             self.error.emit(str(e))
 
@@ -31,7 +70,7 @@ class Worker(QThread):
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("宁波大学课表工具 v1.5.1 PyQt6")
+        self.setWindowTitle("宁波大学课表工具 v1.5.2 PyQt6")
         self.setMinimumSize(520, 360)
 
         self._worker = None
@@ -117,6 +156,10 @@ class LoginWindow(QMainWindow):
 
         # Status / progress
         self.progress = QProgressBar()
+        try:
+            self.progress.setTextVisible(False)
+        except Exception:
+            pass
         self.progress.setVisible(False)
         self.progress.setFixedHeight(int(base_pt * 0.9))
         main_layout.addWidget(self.progress)
@@ -169,19 +212,55 @@ class LoginWindow(QMainWindow):
         # disable UI controls
         self.btn_fetch.setEnabled(False)
         self.status_label.setText("处理中...")
-        self.progress.setRange(0, 0)  # indeterminate
+        # determinate progress 0-100; will be incremented from worker status
+        self.progress.setRange(0, 100)
+        self.progress.setValue(0)
         self.progress.setVisible(True)
 
         # start worker thread
         self._worker = Worker(username, password, first_monday, XNXQDM)
         self._worker.finished.connect(self.on_finished)
         self._worker.error.connect(self.on_error)
+        self._worker.status.connect(self._on_status)
+        self._worker.progress.connect(self._animate_progress)
         self._worker.start()
 
+        # keep a local progress tracker (main-thread view)
+        self._progress_value = 0
+
+    def _animate_progress(self, value):
+        # Animate the progress bar to the new value and keep a reference to avoid GC
+        try:
+            if hasattr(self, '_progress_anim') and self._progress_anim is not None:
+                try:
+                    self._progress_anim.stop()
+                except Exception:
+                    pass
+            self._progress_anim = QPropertyAnimation(self.progress, b"value", self)
+            self._progress_anim.setDuration(120)
+            self._progress_anim.setStartValue(self.progress.value())
+            self._progress_anim.setEndValue(int(value))
+            self._progress_anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
+            self._progress_anim.start()
+        except Exception:
+            # fallback to direct set if animation fails
+            try:
+                self.progress.setValue(int(value))
+            except Exception:
+                pass
+
+    def _on_status(self, msg: str):
+        # Update status label when worker emits status messages
+        try:
+            self.status_label.setText(msg)
+        except Exception:
+            pass
+
     def on_finished(self, calendar):
-        self.progress.setVisible(False)
+        # ensure progress shows completion
         self.progress.setRange(0, 100)
-        
+        self._animate_progress(100)
+        self.progress.setVisible(True)
         # 在主线程中弹出文件保存对话框
         file_path, _ = QFileDialog.getSaveFileName(
             self,
@@ -189,7 +268,7 @@ class LoginWindow(QMainWindow):
             f"{calendar.calendar_name}.ics",
             "ICS Files (*.ics);;All Files (*)"
         )
-        
+
         if file_path:
             try:
                 # 保存文件
@@ -202,11 +281,15 @@ class LoginWindow(QMainWindow):
         else:
             self.status_label.setText("已取消保存")
         
+        # reset UI
+        self.progress.setVisible(False)
+        self.progress.setValue(0)
         self.btn_fetch.setEnabled(True)
         self._worker = None
 
     def on_error(self, msg: str):
         self.progress.setVisible(False)
+        self.progress.setValue(0)
         # self.status_label.setText(f"错误: {msg}")
         self.status_label.setText("错误")
         QMessageBox.critical(self, "错误", f"发生异常：{msg}")
@@ -232,7 +315,8 @@ class LoginWindow(QMainWindow):
             QPushButton { background-color: #3768a0; color: #ffffff; border-radius: 8px; padding:6px 12px; }
             QPushButton:disabled { background-color: #555555; color: #999999; }
             QPushButton#theme_btn { background-color: #3768a0; color: #ffffff; }
-            QProgressBar { background-color: #3768a0; color: #ffffff; }
+            QProgressBar { background-color: #3a3f44; color: #ffffff; border-radius:6px; height:12px; }
+            QProgressBar::chunk { background-color: #58a; border-radius:6px; }
             QLabel { color: #e6e6e6; }
             """
         else:
@@ -243,12 +327,15 @@ class LoginWindow(QMainWindow):
                 QPushButton:disabled { background-color: #cccccc; color: #888888; }
                 /* Make theme button blue in light mode as well */
                 QPushButton#theme_btn { background-color: #528ccb; color: #ffffff; }
-                QProgressBar { background-color: #e9e9e9; color: #222222; }
+                QProgressBar { background-color: #e9e9e9; color: #222222; border-radius:6px; height:12px; }
+                QProgressBar::chunk { background-color: #2b82d9; border-radius:6px; }
                 QLabel { color: #222222; }
                 """
         # Apply and ensure theme button keeps consistent size; also set objectName to target it
         self.theme_btn.setObjectName('theme_btn')
-        QApplication.instance().setStyleSheet(ss)
+        app = QApplication.instance()
+        if app:
+            app.setStyleSheet(ss)
 
 
 if __name__ == "__main__":

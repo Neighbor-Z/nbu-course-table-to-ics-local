@@ -8,7 +8,7 @@ import threading
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("宁波大学课表工具 v1.5.1(2) CustomTkinter")
+        self.root.title("宁波大学课表工具 v1.5.2 CustomTkinter")
         self.root.geometry("520x360+600+300")
         self.root.minsize(320, 320)
         if sys.platform=="win32":
@@ -152,22 +152,70 @@ class App:
     def worker_thread(self):
         # 禁用按钮，防止重复点击
         self.btn.configure(state="disabled")
+        self.entry1.configure(state="disabled")
+        self.entry2.configure(state="disabled")
+        self.entry3.configure(state="disabled")
+        self.entry4.configure(state="disabled")
         self.resultBar.configure(text="工作中...")
         self.progressBar.pack(fill="x")
-        self.progressBar.configure(mode="indeterminate")
-        self.progressBar.start()
+        self.progressBar.configure(mode="determinate")
         # 创建一个新线程，目标函数是 self.run_heavy_task
         # daemon=True 表示如果主程序关闭，这个线程也会随之强行关闭
         thread = threading.Thread(target=self.run_heavy_task, daemon=True)
         thread.start()
 
+    # Redirect stdout to a callback
+    class StdoutRedirector:
+        def __init__(self, callback):
+            self.callback = callback
+
+        def write(self, text):
+            # Only update if text is not just whitespace (e.g. newlines from print)
+            if text.strip():
+                self.callback(text.strip())
+
+        def flush(self):
+            pass
+
+
+    def progress_animation(self, current_value, target_value):
+        # 定义移动速度（毫秒）和 每次移动的步长
+        speed = 25   # 越小越快
+        step = 0.01     # 越大越快
+        
+        if current_value < target_value:
+            # 1. 增加数值
+            new_value = current_value + step
+            # 防止超出目标值
+            if new_value > target_value:
+                new_value = target_value
+                
+            self.progressBar.set(new_value)
+            # 3. 递归调用：speed毫秒后再次执行这个函数
+            self.root.after(speed, self.progress_animation, new_value, target_value)
+
+
     # 这个方法在【后台线程】运行
     def run_heavy_task(self):
+        # Redirect stdout to update the resultBar
+        original_stdout = sys.stdout
+        
+        def update_ui(text):
+            def _update_action():
+                self.resultBar.configure(text=text)
+                currentValue = self.progressBar.get()
+                self.progress_animation(currentValue, currentValue+0.2)
+            # Schedule the UI update on the main thread
+            self.root.after(0, _update_action)
+
+        sys.stdout = self.StdoutRedirector(update_ui)
+
         try:
             if data1.get()=='' or data2.get()=='' or data3.get()=='':
                 error_msg="未正确填写信息"
                 self.root.after(0, self.on_error, error_msg)
             else:
+                self.progress_animation(0, 0.1)
                 username=data1.get()
                 password=data2.get()
                 first_monday=data3.get()
@@ -187,23 +235,33 @@ class App:
             # 注意：不能在这里直接 self.label.configure(...)
             # 必须用 self.root.after(0, ...)
             self.root.after(0, self.on_error, str(e))
+        finally:
+            # Restore stdout
+            sys.stdout = original_stdout
             
 
     # 回到【主线程】运行
     def on_success(self):
-        self.progressBar.configure(mode="determinate")
-        self.progressBar.set(1)
         self.progressBar.stop()
+        currentValue = self.progressBar.get()
+        self.progress_animation(currentValue, 1)
         self.resultBar.configure(text="文件已保存")
         self.btn.configure(state="normal") # 恢复按钮
+        self.entry1.configure(state="normal") # 恢复输入框
+        self.entry2.configure(state="normal")
+        self.entry3.configure(state="normal")
+        self.entry4.configure(state="normal")
 
     def on_error(self, error_msg):
-        self.progressBar.configure(mode="determinate")
-        self.progressBar.set(0)
         self.progressBar.stop()
+        self.progressBar.set(0)
         tkinter.messagebox.showerror('错误', error_msg)
         self.resultBar.configure(text="错误")
         self.btn.configure(state="normal") # 恢复按钮
+        self.entry1.configure(state="normal")
+        self.entry2.configure(state="normal")
+        self.entry3.configure(state="normal")
+        self.entry4.configure(state="normal")
 
     def openweb(self):
         webbrowser.open("https://github.com/Neighbor-Z/nbu-course-table-to-ics-local/")
