@@ -64,9 +64,11 @@ class Calendar:
         if save_path is None:
             # 如果没有提供路径，使用 tkinter 对话框（向后兼容）
             if tkinter is None:
-                raise ValueError("未提供保存路径，且 tkinter 不可用")
-            print("请在弹出窗口中选择保存位置")
-            filedir = tkinter.filedialog.askdirectory(initialdir="/", title="选择保存路径")
+                print("tkinter 窗口选择保存位置不可用, 尝试保存到桌面...")
+                filedir = os.path.join(os.path.expanduser("~"), 'Desktop')
+            else:
+                print("请在弹出窗口中选择保存位置")
+                filedir = tkinter.filedialog.askdirectory(initialdir="/", title="选择保存路径")
             if not filedir:
                 raise ValueError("未选择保存路径")
             save_path = f"{filedir}/{self.calendar_name}.ics"

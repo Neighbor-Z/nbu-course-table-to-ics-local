@@ -1,5 +1,4 @@
 from utils.handler import handleIcs
-import requests
 import traceback
 import sys
 

@@ -70,7 +70,7 @@ class Worker(QThread):
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("宁波大学课表工具 v1.5.2 PyQt6")
+        self.setWindowTitle("宁波大学课表工具 v1.5.3 PyQt6")
         self.setMinimumSize(520, 360)
 
         self._worker = None
@@ -122,8 +122,8 @@ class LoginWindow(QMainWindow):
         lbl_term.setFont(font)
         self.edit_term = QLineEdit()
         self.edit_term.setFont(font)
-        self.edit_term.setPlaceholderText("2025-2026-1")
-        self.edit_term.setText("2025-2026-1")
+        self.edit_term.setPlaceholderText("YYYY(n)-YYYY(n+1)-1/2")
+        self.edit_term.setText("2025-2026-2")
         self.edit_term.setFixedHeight(int(base_pt * 2.2))
 
         lbl_pwd = QLabel("密码")
@@ -139,7 +139,7 @@ class LoginWindow(QMainWindow):
         self.edit_monday = QLineEdit()
         self.edit_monday.setFont(font)
         self.edit_monday.setPlaceholderText("YYYY-MM-DD")
-        self.edit_monday.setText("2025-09-08")
+        self.edit_monday.setText("2026-03-02")
         self.edit_monday.setFixedHeight(int(base_pt * 2.2))
 
         grid.addWidget(lbl_user, 0, 0, Qt.AlignmentFlag.AlignLeft)
@@ -313,8 +313,9 @@ class LoginWindow(QMainWindow):
             QWidget { background-color: #2b2b2b; color: #e6e6e6; }
             QLineEdit { background-color: #3c3f41; color: #ffffff; border: 1px solid #555555; padding:6px; }
             QPushButton { background-color: #3768a0; color: #ffffff; border-radius: 8px; padding:6px 12px; }
+            QPushButton:hover { background-color: #528ccb; }
+            QPushButton:pressed { background-color: #2D5787; }
             QPushButton:disabled { background-color: #555555; color: #999999; }
-            QPushButton#theme_btn { background-color: #3768a0; color: #ffffff; }
             QProgressBar { background-color: #3a3f44; color: #ffffff; border-radius:6px; height:12px; }
             QProgressBar::chunk { background-color: #58a; border-radius:6px; }
             QLabel { color: #e6e6e6; }
@@ -324,9 +325,9 @@ class LoginWindow(QMainWindow):
                 QWidget { background-color: #f3f3f3; color: #222222; }
                 QLineEdit { background-color: #ffffff; color: #222222; border: 1px solid #cfcfcf; padding:6px; }
                 QPushButton { background-color: #528ccb; color: #ffffff; border-radius: 8px; padding:6px 12px; }
+                QPushButton:hover { background-color: #4387D3; }
+                QPushButton:pressed { background-color: #2D5787; }
                 QPushButton:disabled { background-color: #cccccc; color: #888888; }
-                /* Make theme button blue in light mode as well */
-                QPushButton#theme_btn { background-color: #528ccb; color: #ffffff; }
                 QProgressBar { background-color: #e9e9e9; color: #222222; border-radius:6px; height:12px; }
                 QProgressBar::chunk { background-color: #2b82d9; border-radius:6px; }
                 QLabel { color: #222222; }

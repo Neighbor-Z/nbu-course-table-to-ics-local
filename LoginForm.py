@@ -1,5 +1,3 @@
-import customtkinter as ctk
-import tkinter.messagebox
 import sys, webbrowser
 from app.index import register
 import threading
@@ -8,7 +6,7 @@ import threading
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("宁波大学课表工具 v1.5.2 CustomTkinter")
+        self.root.title("宁波大学课表工具 v1.5.3 CustomTkinter")
         self.root.geometry("520x360+600+300")
         self.root.minsize(320, 320)
         if sys.platform=="win32":
@@ -80,8 +78,8 @@ class App:
         data2 = ctk.StringVar()
         data3 = ctk.StringVar()
         data4 = ctk.StringVar()
-        data3.set("2025-09-08")
-        data4.set("2025-2026-1")
+        data3.set("2026-03-02")
+        data4.set("2025-2026-2")
         if sys.platform=="win32":
             self.dL1=ctk.CTkLabel(self.form, text="学号", font=('微软雅黑',12))
             self.dL2=ctk.CTkLabel(self.form, text="学期", font=('微软雅黑',12))
@@ -268,7 +266,14 @@ class App:
 
 
 if __name__ == "__main__":
-    root = ctk.CTk()
-    app = App(root)
-    root.mainloop()
+    try:
+        import tkinter.messagebox
+    except ImportError:
+        from login_cli import cli
+        cli()
+    else:
+        import customtkinter as ctk
+        root = ctk.CTk()
+        app = App(root)
+        root.mainloop()
 

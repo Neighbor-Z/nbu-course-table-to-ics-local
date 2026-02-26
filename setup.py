@@ -6,18 +6,27 @@ Usage:
 """
 
 from setuptools import setup
+import sys
+
+minorVer = sys.version_info.minor
+if minorVer<12:
+    MinimumSystemVersion = '10.9.0'
+elif minorVer<14:
+    MinimumSystemVersion = '10.13.0'
+else:
+    MinimumSystemVersion = '10.15.0'
 
 APP = ['LoginForm.py']
 DATA_FILES = ['./config.yml']
 OPTIONS = {
     # 'iconfile':'NBUClassTableTool.icns',
     'plist':{
-                'CFBundleName'   : 'Class_Table_Tool_macOS_1.5.2_ct',     # 应用名
+                'CFBundleName'   : 'Class_Table_Tool_macOS_1.5.3_ct',     # 应用名
                 'CFBundleDisplayName': '宁大课表工具', # 应用显示名
-                'CFBundleVersion': '1.5.2-20251211-CustomTkinter',      # 应用版本号
+                'CFBundleVersion': '1.5.3-20260201-CustomTkinter',      # 应用版本号
                 'CFBundleIdentifier' : 'me.z.classtabletool', # 应用包名、唯一标识
                 'NSHumanReadableCopyright': ' ', # 可读版权
-                'LSMinimumSystemVersion': '10.9.0',
+                'LSMinimumSystemVersion': MinimumSystemVersion,
             },
     'excludes': [
         'PyQt5',
