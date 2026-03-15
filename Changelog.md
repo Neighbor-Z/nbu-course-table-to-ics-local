@@ -11,6 +11,7 @@
 - Supports "Save Again"
 - Optimized login logic
 - Optimized launch flow
+- Use WebVPN proxy mode by default
 
 
 
@@ -144,6 +145,7 @@ First release.
 - 支持"再次保存"
 - 优化多次登陆逻辑
 - 优化启动方式
+- 默认使用 WebVPN 模式
 
 
 
@@ -278,6 +280,7 @@ First release.
 - 支援"再次儲存"
 - 優化多次登陸邏輯
 - 優化啟動方式
+- 默認使用 WebVPN 模式
 
 
 
