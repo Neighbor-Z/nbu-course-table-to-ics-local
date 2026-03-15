@@ -9,7 +9,7 @@ def launch_ctk(vpn: bool):
         import tkinter.messagebox
         import customtkinter as ctk
     except ImportError:
-        print("CustomTkinter/Tkinter is NOT installed. Use CLI instead.")
+        print("CustomTkinter/Tkinter does NOT work. Use CLI instead.")
         launch_cli(vpn)
     else:
         root = ctk.CTk()
@@ -21,7 +21,7 @@ def launch_pyqt6(vpn: bool):
     try:
         from PyQt6.QtWidgets import QApplication
     except ImportError:
-        print("PyQt6 is NOT installed. Trying CustomTkinter...")
+        print("PyQt6 does NOT work. Trying CustomTkinter...")
         try:
             launch_ctk(vpn)
         except Exception as e:
