@@ -6,20 +6,26 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QPropertyAnimation, QEasingCurve
 from app.index import register
+from __version__ import (
+    __build__,
+    __version__,
+)
 
 
 class Worker(QThread):
-    finished = pyqtSignal(object)  # 传递日历对象
+    finished = pyqtSignal(object, object)  # (calendar, session)
     error = pyqtSignal(str)
     status = pyqtSignal(str)
     progress = pyqtSignal(int)
 
-    def __init__(self, username, password, first_monday, XNXQDM):
+    def __init__(self, username, password, first_monday, XNXQDM, last_session, use_vpn):
         super().__init__()
         self.username = username
         self.password = password
         self.first_monday = first_monday
         self.XNXQDM = XNXQDM
+        self.last_session = last_session
+        self.use_vpn = use_vpn
         self._captured = []
 
     def run(self):
@@ -55,12 +61,10 @@ class Worker(QThread):
 
             sys.stdout = _Redirect(self)
             try:
-                calendar, data_hash = register(self.username, self.password, self.first_monday, self.XNXQDM)
+                calendar, session = register(self.username, self.password, self.first_monday, self.XNXQDM, self.last_session, self.use_vpn)
                 # ensure progress reaches 100 on success
                 self.progress.emit(100)
-                # join captured stdout and emit to main thread for saving
-                captured_text = ''.join(self._captured)
-                self.finished.emit(calendar)
+                self.finished.emit(calendar, session)
             finally:
                 sys.stdout = original_stdout
         except Exception as e:
@@ -68,12 +72,17 @@ class Worker(QThread):
 
 
 class LoginWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, vpn):
         super().__init__()
-        self.setWindowTitle("宁波大学课表工具 v1.5.3 PyQt6")
-        self.setMinimumSize(520, 360)
+        self.setWindowTitle(f"宁波大学课表工具 v{__version__} PyQt6")
+        self.setMinimumSize(520, 390)
 
         self._worker = None
+        self._last_user = None   # 缓存上次登录的用户名
+        self._session = None     # 缓存上次的 session
+        self._calendar = None    # 缓存上次获取的日历对象
+
+        self.use_vpn = vpn
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -86,7 +95,7 @@ class LoginWindow(QMainWindow):
         top_h.addStretch()
         self.theme_btn = QPushButton("Dark")
         self.theme_btn.setCheckable(True)
-        self.theme_btn.setFixedWidth(120)
+        self.theme_btn.setFixedWidth(80)
         # fixed height to avoid layout shift between styles
         self.theme_btn.setFixedHeight(30)
         self.theme_btn.setStyleSheet("padding:4px 8px; border-radius:6px;")
@@ -168,12 +177,20 @@ class LoginWindow(QMainWindow):
         btn_layout = QHBoxLayout()
         btn_layout.addStretch()
         self.btn_fetch = QPushButton("获取")
-        self.btn_fetch.setFixedWidth(180)
+        self.btn_fetch.setFixedWidth(120)
         btn_font = font
         btn_font.setBold(True)
         self.btn_fetch.setFont(btn_font)
         self.btn_fetch.clicked.connect(self.on_fetch)
         btn_layout.addWidget(self.btn_fetch)
+
+        self.btn_save_again = QPushButton("再次保存")
+        self.btn_save_again.setFixedWidth(120)
+        self.btn_save_again.setFont(btn_font)
+        self.btn_save_again.clicked.connect(self.save_again)
+        self.btn_save_again.setVisible(False)  # 尝试获取成功后才显示
+        btn_layout.addWidget(self.btn_save_again)
+
         btn_layout.addStretch()
         main_layout.addLayout(btn_layout)
 
@@ -210,15 +227,19 @@ class LoginWindow(QMainWindow):
             return
 
         # disable UI controls
-        self.btn_fetch.setEnabled(False)
+        self._set_controls_enabled(False)
         self.status_label.setText("处理中...")
         # determinate progress 0-100; will be incremented from worker status
         self.progress.setRange(0, 100)
         self.progress.setValue(0)
         self.progress.setVisible(True)
+        self.btn_save_again.setVisible(False)
 
         # start worker thread
-        self._worker = Worker(username, password, first_monday, XNXQDM)
+        # 同一用户且 session 未失效时复用缓存 session
+        last_session = self._session if self._last_user == username else None
+        self._worker = Worker(username, password, first_monday, XNXQDM,
+                              last_session, self.use_vpn)
         self._worker.finished.connect(self.on_finished)
         self._worker.error.connect(self.on_error)
         self._worker.status.connect(self._on_status)
@@ -256,12 +277,36 @@ class LoginWindow(QMainWindow):
         except Exception:
             pass
 
-    def on_finished(self, calendar):
+    def _set_controls_enabled(self, enabled: bool):
+        """统一启用/禁用所有交互控件。"""
+        self.btn_fetch.setEnabled(enabled)
+        self.edit_user.setEnabled(enabled)
+        self.edit_pwd.setEnabled(enabled)
+        self.edit_monday.setEnabled(enabled)
+        self.edit_term.setEnabled(enabled)
+
+
+    def on_finished(self, calendar, session):
+        # 缓存 session 和日历对象
+        self._session = session
+        self._last_user = self.edit_user.text().strip()
+        self._calendar = calendar
+
         # ensure progress shows completion
         self.progress.setRange(0, 100)
         self._animate_progress(100)
         self.progress.setVisible(True)
-        # 在主线程中弹出文件保存对话框
+        self._do_save(calendar)
+
+        # reset UI
+        self.progress.setVisible(False)
+        self.progress.setValue(0)
+        self._set_controls_enabled(True)
+        self.btn_save_again.setVisible(True)  # 显示“再次保存”按钮
+        self._worker = None
+
+    def _do_save(self, calendar):
+        """弹出文件选择对话框并保存，返回是否保存成功。"""
         file_path, _ = QFileDialog.getSaveFileName(
             self,
             "保存课程表文件",
@@ -280,12 +325,11 @@ class LoginWindow(QMainWindow):
                 QMessageBox.critical(self, "错误", f"保存文件时出错：{str(e)}")
         else:
             self.status_label.setText("已取消保存")
-        
-        # reset UI
-        self.progress.setVisible(False)
-        self.progress.setValue(0)
-        self.btn_fetch.setEnabled(True)
-        self._worker = None
+
+    def save_again(self):
+        """使用缓存的日历对象再次保存。"""
+        if self._calendar is not None:
+            self._do_save(self._calendar)
 
     def on_error(self, msg: str):
         self.progress.setVisible(False)
@@ -293,7 +337,7 @@ class LoginWindow(QMainWindow):
         # self.status_label.setText(f"错误: {msg}")
         self.status_label.setText("错误")
         QMessageBox.critical(self, "错误", f"发生异常：{msg}")
-        self.btn_fetch.setEnabled(True)
+        self._set_controls_enabled(True)
         self._worker = None
 
     def _on_theme_toggle(self):
@@ -321,17 +365,17 @@ class LoginWindow(QMainWindow):
             QLabel { color: #e6e6e6; }
             """
         else:
-                ss = """
-                QWidget { background-color: #f3f3f3; color: #222222; }
-                QLineEdit { background-color: #ffffff; color: #222222; border: 1px solid #cfcfcf; padding:6px; }
-                QPushButton { background-color: #528ccb; color: #ffffff; border-radius: 8px; padding:6px 12px; }
-                QPushButton:hover { background-color: #4387D3; }
-                QPushButton:pressed { background-color: #2D5787; }
-                QPushButton:disabled { background-color: #cccccc; color: #888888; }
-                QProgressBar { background-color: #e9e9e9; color: #222222; border-radius:6px; height:12px; }
-                QProgressBar::chunk { background-color: #2b82d9; border-radius:6px; }
-                QLabel { color: #222222; }
-                """
+            ss = """
+            QWidget { background-color: #f3f3f3; color: #222222; }
+            QLineEdit { background-color: #ffffff; color: #222222; border: 1px solid #cfcfcf; padding:6px; }
+            QPushButton { background-color: #528ccb; color: #ffffff; border-radius: 8px; padding:6px 12px; }
+            QPushButton:hover { background-color: #4387D3; }
+            QPushButton:pressed { background-color: #2D5787; }
+            QPushButton:disabled { background-color: #cccccc; color: #888888; }
+            QProgressBar { background-color: #e9e9e9; color: #222222; border-radius:6px; height:12px; }
+            QProgressBar::chunk { background-color: #2b82d9; border-radius:6px; }
+            QLabel { color: #222222; }
+            """
         # Apply and ensure theme button keeps consistent size; also set objectName to target it
         self.theme_btn.setObjectName('theme_btn')
         app = QApplication.instance()
@@ -340,7 +384,8 @@ class LoginWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    use_vpn=False if len(sys.argv)>1 and sys.argv[1]=="--no-vpn" else True
     app = QApplication(sys.argv)
-    win = LoginWindow()
+    win = LoginWindow(use_vpn)
     win.show()
     sys.exit(app.exec())

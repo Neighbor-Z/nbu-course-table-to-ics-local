@@ -1,7 +1,11 @@
+from __version__ import (
+    __build__,
+    __version__,
+)
 
-def cli():
+def cli(use_vpn: bool):
     import getpass
-    print("宁波大学课表工具 v1.5.2 CLI\n")
+    print(f"宁波大学课表工具 v{__version__} CLI\n")
     try:
         import readline
     except Exception as e:
@@ -21,7 +25,7 @@ def cli():
             print(error_msg)
         else:
             from app.index import register
-            calendar, data_hash=register(username, password, first_monday, XNXQDM)
+            calendar, session=register(username, password, first_monday, XNXQDM, None, use_vpn)
             try:
                 calendar.save_as_ics_file()
                 print("文件已保存")

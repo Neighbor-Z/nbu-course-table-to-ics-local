@@ -7,6 +7,10 @@ Usage:
 
 from setuptools import setup
 import sys
+from __version__ import (
+    __build__,
+    __version__,
+)
 
 minorVer = sys.version_info.minor
 if minorVer<12:
@@ -17,13 +21,13 @@ else:
     MinimumSystemVersion = '10.15.0'
 
 APP = ['LoginForm.py']
-DATA_FILES = ['./config.yml']
+# DATA_FILES = ['./config.yml']
 OPTIONS = {
     # 'iconfile':'NBUClassTableTool.icns',
     'plist':{
-                'CFBundleName'   : 'Class_Table_Tool_macOS_1.5.3_ct',     # 应用名
+                'CFBundleName'   : f'Class_Table_Tool_macOS_{__version__}_ct',     # 应用名
                 'CFBundleDisplayName': '宁大课表工具', # 应用显示名
-                'CFBundleVersion': '1.5.3-20260201-CustomTkinter',      # 应用版本号
+                'CFBundleVersion': f'{__version__}-{__build__}-CustomTkinter',      # 应用版本号
                 'CFBundleIdentifier' : 'me.z.classtabletool', # 应用包名、唯一标识
                 'NSHumanReadableCopyright': ' ', # 可读版权
                 'LSMinimumSystemVersion': MinimumSystemVersion,

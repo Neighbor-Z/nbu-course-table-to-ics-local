@@ -8,17 +8,31 @@ Simply fetch NBU courses table from ehall and generate ics file.
 
 ```shell
 pip install -r dependencies.txt
-python LoginForm.py
+python main.py
+```
+
+View more options:
+
+```shell
+python main.py -h
 ```
 
 
 
 ## Build
 
-**Module py2app is NEEDED.** 
+For macOS, Module py2app is NEEDED. 
+
+To pack CustomTkinter GUI version:
 
 ```shell
 python setup.py py2app
+```
+
+To pack PyQt6 GUI version:
+
+```shell
+python setup_pyqt.py py2app
 ```
 
 Program will be placed at  `./dist` .
@@ -43,17 +57,31 @@ This tool is released under GPL license, refer [LICENSE](https://github.com/Neig
 
 ```shell
 pip install -r dependencies.txt
-python LoginForm.py
+python main.py
+```
+
+更多选项：
+
+```shell
+python main.py -h
 ```
 
 
 
 ## 构建
 
-**需要预先安装py2app模块。**
+打包 macOS .app 需要预先安装 py2app 模块。
+
+打包 CustomTkinter GUI 版本：
 
 ```shell
 python setup.py py2app
+```
+
+打包 PyQt6 GUI 版本：
+
+```shell
+python setup_pyqt.py py2app
 ```
 
 构建的程序在 `./dist` 目录下

@@ -1,14 +1,19 @@
 import sys, webbrowser
 from app.index import register
 import threading
+from __version__ import (
+    __build__,
+    __version__,
+)
 
 
 class App:
-    def __init__(self, root):
+    def __init__(self, root, vpn):
         self.root = root
-        self.root.title("宁波大学课表工具 v1.5.3 CustomTkinter")
-        self.root.geometry("520x360+600+300")
+        self.root.title(f"宁波大学课表工具 v{__version__} CustomTkinter")
+        self.root.geometry("520x380+600+300")
         self.root.minsize(320, 320)
+        self.use_vpn = vpn
         if sys.platform=="win32":
             ctk.set_appearance_mode("Dark")
             switch_var = ctk.StringVar(value="on")
@@ -80,6 +85,8 @@ class App:
         data4 = ctk.StringVar()
         data3.set("2026-03-02")
         data4.set("2025-2026-2")
+        self.last_user = None
+        self.session = None
         if sys.platform=="win32":
             self.dL1=ctk.CTkLabel(self.form, text="学号", font=('微软雅黑',12))
             self.dL2=ctk.CTkLabel(self.form, text="学期", font=('微软雅黑',12))
@@ -126,6 +133,8 @@ class App:
         self.bottom_bar.pack(pady=(20, 5))
         self.btn=ctk.CTkButton(self.bottom_bar, text=" 获取 ", command=self.worker_thread, font=('微软雅黑',14), width=120)
         self.btn.pack()
+        self.btn2=ctk.CTkButton(self.bottom_bar, text="再次保存", command=self.save, font=('微软雅黑',14), width=120)
+        self.btn2.configure(state="disabled")
 
         # 右下角的 GitHub 文本链接（无按钮背景，仅下划线）
         try:
@@ -150,6 +159,7 @@ class App:
     def worker_thread(self):
         # 禁用按钮，防止重复点击
         self.btn.configure(state="disabled")
+        self.btn2.configure(state="disabled")
         self.entry1.configure(state="disabled")
         self.entry2.configure(state="disabled")
         self.entry3.configure(state="disabled")
@@ -157,6 +167,8 @@ class App:
         self.resultBar.configure(text="工作中...")
         self.progressBar.pack(fill="x")
         self.progressBar.configure(mode="determinate")
+        self.calendar = None
+        self.btn2.pack_forget()
         # 创建一个新线程，目标函数是 self.run_heavy_task
         # daemon=True 表示如果主程序关闭，这个线程也会随之强行关闭
         thread = threading.Thread(target=self.run_heavy_task, daemon=True)
@@ -218,16 +230,21 @@ class App:
                 password=data2.get()
                 first_monday=data3.get()
                 XNXQDM=data4.get()
-                calendar, data_hash=register(username, password, first_monday, XNXQDM)
+                if self.last_user==username and self.session is not None:
+                    self.calendar, self.session=register(username, password, first_monday, XNXQDM, self.session, self.use_vpn)
+                else:
+                    self.calendar, self.session=register(username, password, first_monday, XNXQDM, None, self.use_vpn)
                 try:
                 # 保存文件
-                    calendar.save_as_ics_file()
+                    self.calendar.save_as_ics_file()
                     print("文件已保存")
                     # 任务完成，通知主线程更新 UI
                     self.root.after(0, self.on_success())
                 except Exception as ee:
                     print("保存失败")
-                    self.root.after(0, self.on_error, str(ee))                
+                    self.root.after(0, self.on_error, str(ee))
+                finally:
+                    self.last_user=username
         except Exception as e:
             # 捕获所有未预期的异常，防止程序崩溃
             # 注意：不能在这里直接 self.label.configure(...)
@@ -238,42 +255,58 @@ class App:
             sys.stdout = original_stdout
             
 
+    def _restore_controls(self):
+        """成功或出错后恢复所有控件状态。"""
+        self.btn.configure(state="normal")
+        self.entry1.configure(state="normal")
+        self.entry2.configure(state="normal")
+        self.entry3.configure(state="normal")
+        self.entry4.configure(state="normal")
+
     # 回到【主线程】运行
     def on_success(self):
         self.progressBar.stop()
         currentValue = self.progressBar.get()
         self.progress_animation(currentValue, 1)
         self.resultBar.configure(text="文件已保存")
-        self.btn.configure(state="normal") # 恢复按钮
-        self.entry1.configure(state="normal") # 恢复输入框
-        self.entry2.configure(state="normal")
-        self.entry3.configure(state="normal")
-        self.entry4.configure(state="normal")
+        self._restore_controls()
+        if self.calendar:
+            self.btn2.configure(state="normal")
+            self.btn2.pack(pady=(5,0))
 
     def on_error(self, error_msg):
         self.progressBar.stop()
         self.progressBar.set(0)
         tkinter.messagebox.showerror('错误', error_msg)
         self.resultBar.configure(text="错误")
-        self.btn.configure(state="normal") # 恢复按钮
-        self.entry1.configure(state="normal")
-        self.entry2.configure(state="normal")
-        self.entry3.configure(state="normal")
-        self.entry4.configure(state="normal")
+        self._restore_controls()
+        if self.calendar:
+            self.btn2.configure(state="normal")
+            self.btn2.pack(pady=(5,0))
+
+    def save(self):
+        try:
+            self.calendar.save_as_ics_file()
+            self.resultBar.configure(text="文件已保存")
+        except Exception:
+            self.resultBar.configure(text="未保存或保存失败")
 
     def openweb(self):
         webbrowser.open("https://github.com/Neighbor-Z/nbu-course-table-to-ics-local/")
 
 
 if __name__ == "__main__":
+    use_vpn=False if len(sys.argv)>1 and sys.argv[1]=="--no-vpn" else True
     try:
         import tkinter.messagebox
+        import customtkinter as ctk
     except ImportError:
         from login_cli import cli
-        cli()
+        cli(use_vpn)
     else:
-        import customtkinter as ctk
         root = ctk.CTk()
-        app = App(root)
+        app = App(root, use_vpn)
         root.mainloop()
+else:
+    import customtkinter as ctk
 

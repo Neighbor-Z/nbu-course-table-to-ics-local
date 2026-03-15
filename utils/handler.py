@@ -56,11 +56,12 @@ def handleIcsYjs(session,first_monday,XNXQDM):
     return calendar, class_md5.hexdigest()
 
 
-def handleIcs(username, password, first_monday, XNXQDM):
-    session = checkStudentKind(username, password)
+def handleIcs(username, password, first_monday, XNXQDM, session):
+    if session is None:
+        session = checkStudentKind(username, password)
     if len(username) == 9:
         calendar, data_hash = handleIcsBks(session,first_monday,XNXQDM)
     else:
         yjsXNXQDM = XNXQDM[:4] + XNXQDM[-1:]
         calendar, data_hash = handleIcsYjs(session,first_monday,yjsXNXQDM)
-    return calendar, data_hash
+    return calendar, session

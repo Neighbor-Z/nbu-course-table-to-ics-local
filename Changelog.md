@@ -4,6 +4,16 @@
 
 ## EN
 
+## v1.6-20260315
+
+### What's Changed
+
+- Supports "Save Again"
+- Optimized login logic
+- Optimized launch flow
+
+
+
 ## v1.5.3-20260201
 
 ### What's Changed
@@ -126,6 +136,16 @@ First release.
 
 
 ## ZH-HANS
+
+## v1.6-20260315
+
+### 更新日志
+
+- 支持"再次保存"
+- 优化多次登陆逻辑
+- 优化启动方式
+
+
 
 ## v1.5.3-20260201
 
@@ -250,6 +270,16 @@ First release.
 
 
 ## ZH-HANT
+
+## v1.6-20260315
+
+### 更新日誌
+
+- 支援"再次儲存"
+- 優化多次登陸邏輯
+- 優化啟動方式
+
+
 
 ## v1.5.3-20260201
 
