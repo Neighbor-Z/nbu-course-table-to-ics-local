@@ -270,9 +270,6 @@ class App:
         self.progress_animation(currentValue, 1)
         self.resultBar.configure(text="文件已保存")
         self._restore_controls()
-        if self.calendar:
-            self.btn2.configure(state="normal")
-            self.btn2.pack(pady=(5,0))
 
     def on_error(self, error_msg):
         self.progressBar.stop()
@@ -288,6 +285,9 @@ class App:
         try:
             self.calendar.save_as_ics_file()
             self.resultBar.configure(text="文件已保存")
+            currentValue = self.progressBar.get()
+            self.progress_animation(currentValue, 1)
+            self.btn2.pack_forget()
         except Exception:
             self.resultBar.configure(text="未保存或保存失败")
 

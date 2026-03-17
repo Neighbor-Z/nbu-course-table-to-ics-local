@@ -302,7 +302,6 @@ class LoginWindow(QMainWindow):
         self.progress.setVisible(False)
         self.progress.setValue(0)
         self._set_controls_enabled(True)
-        self.btn_save_again.setVisible(True)  # 显示“再次保存”按钮
         self._worker = None
 
     def _do_save(self, calendar):
@@ -320,11 +319,14 @@ class LoginWindow(QMainWindow):
                 calendar.save_as_ics_file(file_path)
                 self.status_label.setText("文件已保存")
                 QMessageBox.information(self, "成功", f"文件已保存到：\n{file_path}")
+                self.btn_save_again.setVisible(False)
             except Exception as e:
                 self.status_label.setText("保存失败")
                 QMessageBox.critical(self, "错误", f"保存文件时出错：{str(e)}")
+                self.btn_save_again.setVisible(True)
         else:
             self.status_label.setText("已取消保存")
+            self.btn_save_again.setVisible(True)
 
     def save_again(self):
         """使用缓存的日历对象再次保存。"""
