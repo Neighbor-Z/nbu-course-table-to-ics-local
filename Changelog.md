@@ -4,6 +4,15 @@
 
 ## EN
 
+## v1.6.1-20260331
+
+### What's Changed
+
+- Optimized UI
+- Fix a import issue
+
+
+
 ## v1.6-20260315
 
 ### What's Changed
@@ -137,6 +146,15 @@ First release.
 
 
 ## ZH-HANS
+
+## v1.6.1-20260331
+
+### 更新日志
+
+- 优化界面
+- 修复一个 import 问题
+
+
 
 ## v1.6-20260315
 
@@ -272,6 +290,15 @@ First release.
 
 
 ## ZH-HANT
+
+## v1.6.1-20260331
+
+### 更新日誌
+
+- 優化界面
+- 修復一個 import 問題
+
+
 
 ## v1.6-20260315
 
