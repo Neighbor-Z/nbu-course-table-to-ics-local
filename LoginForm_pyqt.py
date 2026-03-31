@@ -203,7 +203,7 @@ class LoginWindow(QMainWindow):
         # GitHub link at bottom-right
         link_label = QLabel('<a href="https://github.com/Neighbor-Z/nbu-course-table-to-ics-local/">GitHub</a>')
         link_label.setOpenExternalLinks(True)
-        link_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        link_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignBottom)
         link_label.setFont(font)
         main_layout.addWidget(link_label)
 
@@ -278,7 +278,7 @@ class LoginWindow(QMainWindow):
             pass
 
     def _set_controls_enabled(self, enabled: bool):
-        """统一启用/禁用所有交互控件。"""
+        # enable/disable all widgets
         self.btn_fetch.setEnabled(enabled)
         self.edit_user.setEnabled(enabled)
         self.edit_pwd.setEnabled(enabled)
@@ -305,7 +305,7 @@ class LoginWindow(QMainWindow):
         self._worker = None
 
     def _do_save(self, calendar):
-        """弹出文件选择对话框并保存，返回是否保存成功。"""
+        # 弹出文件选择对话框并保存
         file_path, _ = QFileDialog.getSaveFileName(
             self,
             "保存课程表文件",
@@ -315,8 +315,7 @@ class LoginWindow(QMainWindow):
 
         if file_path:
             try:
-                # 保存文件
-                calendar.save_as_ics_file(file_path)
+                calendar.save_as_ics_file(file_path) # 保存文件
                 self.status_label.setText("文件已保存")
                 QMessageBox.information(self, "成功", f"文件已保存到：\n{file_path}")
                 self.btn_save_again.setVisible(False)

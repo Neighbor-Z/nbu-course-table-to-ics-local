@@ -37,8 +37,8 @@ class App:
         # =============================
         # Top bar (theme switch)
         # =============================
-        self.top_bar = ctk.CTkFrame(self.main)
-        self.top_bar.pack(fill="x", pady=(5, 15))
+        self.top_bar = ctk.CTkFrame(self.main, fg_color="transparent")
+        self.top_bar.pack(fill="x", pady=(14, 6))
         
         def _apply_appearance(mode: str):
             # Apply appearance mode and refresh pending UI updates to reduce visible flicker.
@@ -69,7 +69,7 @@ class App:
         # 左列：学号、密码；右列：学期、首个周一
         # =============================
         self.form = ctk.CTkFrame(self.main)
-        self.form.pack(fill="x", expand=False, pady=(10, 10))
+        self.form.pack(fill="x", expand=False, pady=(10, 5))
         # Grid layout: 2 columns
         for col in range(2):
             self.form.grid_columnconfigure(col, weight=1)
@@ -99,24 +99,24 @@ class App:
             self.dL4=ctk.CTkLabel(self.form, text="首个周一")
 
         # 左列：学号、密码（垂直堆叠）
-        self.dL1.grid(row=0, column=0, padx=8, pady=(8,2), sticky="w")
+        self.dL1.grid(row=0, column=0, padx=8, pady=(4,2), sticky="w")
         self.entry1=ctk.CTkEntry(self.form, textvariable=data1)
-        self.entry1.grid(row=1, column=0, padx=8, pady=(0,8), sticky="ew")
+        self.entry1.grid(row=1, column=0, padx=8, pady=(0,4), sticky="ew")
 
         self.dL3.grid(row=2, column=0, padx=8, pady=(8,2), sticky="w")
         self.entry3=ctk.CTkEntry(self.form, textvariable=data2, show="*")
-        self.entry3.grid(row=3, column=0, padx=8, pady=(0,8), sticky="ew")
+        self.entry3.grid(row=3, column=0, padx=8, pady=(0,12), sticky="ew")
 
         # 右列：学期、首个周一（垂直堆叠）
-        self.dL2.grid(row=0, column=1, padx=8, pady=(8,2), sticky="w")
+        self.dL2.grid(row=0, column=1, padx=8, pady=(4,2), sticky="w")
         self.entry2=ctk.CTkEntry(self.form, textvariable=data4)
-        self.entry2.grid(row=1, column=1, padx=8, pady=(0,8), sticky="ew")
+        self.entry2.grid(row=1, column=1, padx=8, pady=(0,4), sticky="ew")
 
         self.dL4.grid(row=2, column=1, padx=8, pady=(8,2), sticky="w")
         self.entry4=ctk.CTkEntry(self.form, textvariable=data3)
-        self.entry4.grid(row=3, column=1, padx=8, pady=(0,8), sticky="ew")
+        self.entry4.grid(row=3, column=1, padx=8, pady=(0,12), sticky="ew")
 
-        self.status_bar = ctk.CTkFrame(self.main)
+        self.status_bar = ctk.CTkFrame(self.main, fg_color="transparent")
         self.status_bar.pack(fill="x", pady=3)
         # 进度条
         self.progressBar=ctk.CTkProgressBar(self.status_bar, orientation="horizontal")
@@ -127,9 +127,9 @@ class App:
         self.resultBar.pack()
 
         # =============================
-        # Button area (保留“获取”按钮)
+        # Button area
         # =============================
-        self.bottom_bar = ctk.CTkFrame(self.main)
+        self.bottom_bar = ctk.CTkFrame(self.main, fg_color="transparent")
         self.bottom_bar.pack(pady=(20, 5))
         self.btn=ctk.CTkButton(self.bottom_bar, text=" 获取 ", command=self.worker_thread, font=('微软雅黑',14), width=120)
         self.btn.pack()
@@ -155,9 +155,7 @@ class App:
             self.github_label.bind("<Button-1>", lambda e: self.openweb())
 
 
-    # 按钮点击触发这个方法
     def worker_thread(self):
-        # 禁用按钮，防止重复点击
         self.btn.configure(state="disabled")
         self.btn2.configure(state="disabled")
         self.entry1.configure(state="disabled")
@@ -194,14 +192,13 @@ class App:
         step = 0.01     # 越大越快
         
         if current_value < target_value:
-            # 1. 增加数值
             new_value = current_value + step
             # 防止超出目标值
             if new_value > target_value:
                 new_value = target_value
                 
             self.progressBar.set(new_value)
-            # 3. 递归调用：speed毫秒后再次执行这个函数
+            # 递归调用：speed毫秒后再次执行这个函数
             self.root.after(speed, self.progress_animation, new_value, target_value)
 
 
@@ -235,20 +232,15 @@ class App:
                 else:
                     self.calendar, self.session=register(username, password, first_monday, XNXQDM, None, self.use_vpn)
                 try:
-                # 保存文件
-                    self.calendar.save_as_ics_file()
+                    self.calendar.save_as_ics_file() # 保存文件
                     print("文件已保存")
-                    # 任务完成，通知主线程更新 UI
-                    self.root.after(0, self.on_success())
+                    self.root.after(0, self.on_success()) # 任务完成，通知主线程更新 UI
                 except Exception as ee:
                     print("保存失败")
                     self.root.after(0, self.on_error, str(ee))
                 finally:
                     self.last_user=username
         except Exception as e:
-            # 捕获所有未预期的异常，防止程序崩溃
-            # 注意：不能在这里直接 self.label.configure(...)
-            # 必须用 self.root.after(0, ...)
             self.root.after(0, self.on_error, str(e))
         finally:
             # Restore stdout
@@ -308,5 +300,6 @@ if __name__ == "__main__":
         app = App(root, use_vpn)
         root.mainloop()
 else:
+    import tkinter.messagebox
     import customtkinter as ctk
 
